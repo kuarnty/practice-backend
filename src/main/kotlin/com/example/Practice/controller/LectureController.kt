@@ -42,4 +42,25 @@ class LectureMutationController(
         )
         return lectureRepository.save(lecture)
     }
+    @MutationMapping
+    fun updateLecture(
+        @Argument id: String,
+        @Argument title: String?,
+        @Argument description: String?,
+        @Argument instructor: String?
+    ): Mono<Lecture> {
+        return lectureRepository.findById(id).flatMap { lecture ->
+            val updated = lecture.copy(
+                title = title ?: lecture.title,
+                description = description ?: lecture.description,
+                instructor = instructor ?: lecture.instructor
+            )
+            lectureRepository.save(updated)
+        }
+    }
+
+    @MutationMapping
+    fun deleteLecture(@Argument id: String): Mono<Boolean> {
+        return lectureRepository.deleteById(id).thenReturn(true)
+    }
 }

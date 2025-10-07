@@ -22,7 +22,7 @@ class UserController(
     fun users(): Flux<User> = userRepository.findAll()
 }
 
-// Mutation controller for User entityt
+// Mutation controller for User entity
 @Controller
 class UserMutationController(
     private val userRepository: UserRepository
@@ -41,5 +41,25 @@ class UserMutationController(
             createdAt = Instant.now()
         )
         return userRepository.save(user)
+    }
+
+    @MutationMapping
+    fun updateUser(
+        @Argument id: String,
+        @Argument username: String?,
+        @Argument email: String?
+    ): Mono<User> {
+        return userRepository.findById(id).flatMap { user ->
+            val updated = user.copy(
+                username = username ?: user.username,
+                email = email ?: user.email
+            )
+            userRepository.save(updated)
+        }
+    }
+
+    @MutationMapping
+    fun deleteUser(@Argument id: String): Mono<Boolean> {
+        return userRepository.deleteById(id).thenReturn(true)
     }
 }

@@ -45,6 +45,26 @@ class EnrollmentMutationController(
         )
         return enrollmentRepository.save(enrollment)
     }
+
+    @MutationMapping
+    fun updateEnrollment(
+        @Argument id: String,
+        @Argument userId: String?,
+        @Argument lectureId: String?
+    ): Mono<Enrollment> {
+        return enrollmentRepository.findById(id).flatMap { enrollment ->
+            val updated = enrollment.copy(
+                userId = userId ?: enrollment.userId,
+                lectureId = lectureId ?: enrollment.lectureId
+            )
+            enrollmentRepository.save(updated)
+        }
+    }
+
+    @MutationMapping
+    fun deleteEnrollment(@Argument id: String): Mono<Boolean> {
+        return enrollmentRepository.deleteById(id).thenReturn(true)
+    }
 }
 
 @Controller

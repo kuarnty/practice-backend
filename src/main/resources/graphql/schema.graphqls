@@ -1,3 +1,37 @@
 type Query {
   hello: String
+  users: [User!]!
+  lectures: [Lecture!]!
+  enrollments: [Enrollment!]!
+}
+
+# User type represents a registered user in the system.
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  createdAt: String!
+}
+
+"""Lecture type represents an online course or content."""
+type Lecture {
+  id: ID!
+  title: String!
+  description: String!
+  instructor: String!
+  createdAt: String!
+}
+
+# Enrollment type tracks which user is enrolled in which lecture.
+type Enrollment {
+  id: ID!
+  user: User!
+  lecture: Lecture!
+  enrolledAt: String!
+}
+
+type Mutation {
+  createUser(username: String!, email: String!, password: String!): User!
+  createLecture(title: String!, description: String!, instructor: String!): Lecture!
+  createEnrollment(userId: ID!, lectureId: ID!): Enrollment!
 }

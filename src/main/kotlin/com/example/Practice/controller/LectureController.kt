@@ -2,22 +2,20 @@ package com.example.practice.controller
 
 import com.example.practice.model.Lecture
 import com.example.practice.repository.LectureRepository
+import com.example.practice.validation.ValidationService
+
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.stereotype.Controller
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Flux
-import java.time.Instant
 
- //GraphQL controller for Lecture queries.
+// GraphQL controller for Lecture queries.
 @Controller
 class LectureController(
     private val lectureRepository: LectureRepository
 ) {
-    /**
-     * Returns a list of all lectures. Never returns null.
-     */
     @QueryMapping
     fun lectures(): Flux<Lecture> = lectureRepository.findAll()
 }
@@ -25,23 +23,24 @@ class LectureController(
 // Mutation controller for Lecture entity
 @Controller
 class LectureMutationController(
-    private val lectureRepository: LectureRepository
+    private val lectureRepository: LectureRepository,
+    private val validationService: ValidationService
 ) {
-    // Create a new Lecture
     @MutationMapping
     fun createLecture(
         @Argument title: String,
-        @Argument description: String,
+        @Argument description: String?,
         @Argument instructor: String
     ): Mono<Lecture> {
-        val lecture = Lecture(
-            title = title,
-            description = description,
-            instructor = instructor,
-            createdAt = Instant.now()
-        )
-        return lectureRepository.save(lecture)
+        return validationService.validateLecture(title, description, instructor).flatMap { validationResult ->
+            if (!validationResult.isValid) {
+                return@flatMap Mono.error<Lecture>(IllegalArgumentException(validationResult.errorMessage))
+            }
+            val lecture = Lecture(title = title, description = description, instructor = instructor)
+            lectureRepository.save(lecture)
+        }
     }
+
     @MutationMapping
     fun updateLecture(
         @Argument id: String,
@@ -49,18 +48,31 @@ class LectureMutationController(
         @Argument description: String?,
         @Argument instructor: String?
     ): Mono<Lecture> {
-        return lectureRepository.findById(id).flatMap { lecture ->
-            val updated = lecture.copy(
-                title = title ?: lecture.title,
-                description = description ?: lecture.description,
-                instructor = instructor ?: lecture.instructor
-            )
-            lectureRepository.save(updated)
+        return lectureRepository.findById(id).flatMap { existingLecture ->
+            val newTitle = title ?: existingLecture.title
+            val newDescription = description ?: existingLecture.description
+            val newInstructor = instructor ?: existingLecture.instructor
+            validationService.validateLecture(newTitle, newDescription, newInstructor).flatMap { validationResult ->
+                if (!validationResult.isValid) {
+                    return@flatMap Mono.error<Lecture>(IllegalArgumentException(validationResult.errorMessage))
+                }
+                val updatedLecture = existingLecture.copy(
+                    title = newTitle,
+                    description = newDescription,
+                    instructor = newInstructor
+                )
+                lectureRepository.save(updatedLecture)
+            }
         }
     }
 
     @MutationMapping
-    fun deleteLecture(@Argument id: String): Mono<Boolean> {
-        return lectureRepository.deleteById(id).thenReturn(true)
+    fun deleteLecture(
+        @Argument id: String
+    ): Mono<Boolean> {
+        return lectureRepository.existsById(id).flatMap { exists ->
+            if (!exists) return@flatMap Mono.just(false)
+            lectureRepository.deleteById(id).thenReturn(true)
+        }
     }
 }

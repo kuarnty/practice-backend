@@ -6,6 +6,8 @@ import com.example.practice.model.Lecture
 import com.example.practice.repository.EnrollmentRepository
 import com.example.practice.repository.UserRepository
 import com.example.practice.repository.LectureRepository
+import com.example.practice.validation.ValidationService
+
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.Argument
@@ -13,16 +15,12 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.stereotype.Controller
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Flux
-import java.time.Instant
 
-//GraphQL controller for Enrollment queries.
+// GraphQL controller for Enrollment queries.
 @Controller
 class EnrollmentController(
     private val enrollmentRepository: EnrollmentRepository
 ) {
-    /**
-     * Returns a list of all enrollments. Never returns null.
-     */
     @QueryMapping
     fun enrollments(): Flux<Enrollment> = enrollmentRepository.findAll()
 }
@@ -30,20 +28,21 @@ class EnrollmentController(
 // Mutation controller for Enrollment entity
 @Controller
 class EnrollmentMutationController(
-    private val enrollmentRepository: EnrollmentRepository
+    private val enrollmentRepository: EnrollmentRepository,
+    private val validationService: ValidationService
 ) {
-    // Create a new Enrollment
     @MutationMapping
     fun createEnrollment(
         @Argument userId: String,
         @Argument lectureId: String
     ): Mono<Enrollment> {
-        val enrollment = Enrollment(
-            userId = userId,
-            lectureId = lectureId,
-            enrolledAt = Instant.now()
-        )
-        return enrollmentRepository.save(enrollment)
+        return validationService.validateEnrollment(userId, lectureId).flatMap { validationResult ->
+            if (!validationResult.isValid) {
+                return@flatMap Mono.error<Enrollment>(IllegalArgumentException(validationResult.errorMessage))
+            }
+            val enrollment = Enrollment(userId = userId, lectureId = lectureId)
+            enrollmentRepository.save(enrollment)
+        }
     }
 
     @MutationMapping
@@ -52,18 +51,30 @@ class EnrollmentMutationController(
         @Argument userId: String?,
         @Argument lectureId: String?
     ): Mono<Enrollment> {
-        return enrollmentRepository.findById(id).flatMap { enrollment ->
-            val updated = enrollment.copy(
-                userId = userId ?: enrollment.userId,
-                lectureId = lectureId ?: enrollment.lectureId
-            )
-            enrollmentRepository.save(updated)
+        return enrollmentRepository.findById(id).flatMap { existingEnrollment ->
+            val newUserId = userId ?: existingEnrollment.userId
+            val newLectureId = lectureId ?: existingEnrollment.lectureId
+            validationService.validateEnrollment(newUserId, newLectureId).flatMap { validationResult ->
+                if (!validationResult.isValid) {
+                    return@flatMap Mono.error<Enrollment>(IllegalArgumentException(validationResult.errorMessage))
+                }
+                val updatedEnrollment = existingEnrollment.copy(
+                    userId = newUserId,
+                    lectureId = newLectureId
+                )
+                enrollmentRepository.save(updatedEnrollment)
+            }
         }
     }
 
     @MutationMapping
-    fun deleteEnrollment(@Argument id: String): Mono<Boolean> {
-        return enrollmentRepository.deleteById(id).thenReturn(true)
+    fun deleteEnrollment(
+        @Argument id: String
+    ): Mono<Boolean> {
+        return enrollmentRepository.existsById(id).flatMap { exists ->
+            if (!exists) return@flatMap Mono.just(false)
+            enrollmentRepository.deleteById(id).thenReturn(true)
+        }
     }
 }
 

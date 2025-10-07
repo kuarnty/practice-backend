@@ -11,7 +11,7 @@ import java.time.Instant
 data class Lecture(
     @Id val id: String? = null,                // Unique identifier for the lecture
     val title: String,                         // Title of the lecture
-    val description: String,                   // Description of the lecture content
+    val description: String?,                   // Description of the lecture content
     val instructor: String,                    // Name of the instructor
     val createdAt: Instant = Instant.now()     // Timestamp when the lecture was created
 )

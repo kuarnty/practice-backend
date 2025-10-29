@@ -6,8 +6,8 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import reactor.core.publisher.Mono
 
 interface UserRepository : ReactiveMongoRepository<User, String> {
-    fun existsByUsername(username: String): Mono<Boolean>
+    fun existsByName(name: String): Mono<Boolean>
     fun existsByEmail(email: String): Mono<Boolean>
-    fun existsByUsernameAndIdNot(username: String, id: String): Mono<Boolean>
+    fun existsByNameAndIdNot(name: String, id: String): Mono<Boolean>
     fun existsByEmailAndIdNot(email: String, id: String): Mono<Boolean>
 }

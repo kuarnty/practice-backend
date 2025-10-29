@@ -8,8 +8,9 @@ type Query {
 # User type represents a registered user in the system.
 type User {
     id: ID!
-    username: String!
+    name: String!
     email: String!
+    password: String!
     createdAt: String!
 }
 
@@ -17,9 +18,10 @@ type User {
 type Lecture {
     id: ID!
     title: String!
-    description: String!
+    description: String
     instructor: String!
     createdAt: String!
+    updatedAt: String!
 }
 
 # Enrollment type tracks which user is enrolled in which lecture.
@@ -27,13 +29,16 @@ type Enrollment {
     id: ID!
     user: User!
     lecture: Lecture!
+    progress: Float!
+    grade: String
     enrolledAt: String!
+    updatedAt: String!
 }
 
 type Mutation {
     #User
-    createUser(username: String!, email: String!, password: String!): User!
-    updateUser(id: ID!, username: String, email: String, password: String): User!
+    createUser(name: String!, email: String!, password: String!): User!
+    updateUser(id: ID!, name: String, email: String, password: String): User!
     deleteUser(id: ID!): Boolean!
 
     #Lecture

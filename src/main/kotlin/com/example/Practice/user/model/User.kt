@@ -9,9 +9,9 @@ import java.time.Instant
  */
 @Document(collection = "users")
 data class User(
-    @Id val id: String? = null,                // Unique identifier for the user
-    val username: String,                      // Username for login and display
-    val email: String,                         // User's email address
-    val password: String,                      // User's password (should be hashed in production)
-    val createdAt: Instant = Instant.now()     // Timestamp when the user account was created
+    @Id val id: String? = null,                 // Unique identifier for the user
+    val name: String,                           // Name for display
+    val email: String,                          // User's email address, used for login
+    val password: String,                       // User's password (should be hashed in production)
+    val createdAt: Instant = Instant.now()      // Timestamp when the user account was created
 )

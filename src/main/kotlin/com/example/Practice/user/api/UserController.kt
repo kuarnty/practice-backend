@@ -1,82 +1,39 @@
 package com.example.practice.user.api
 
 import com.example.practice.user.model.User
-import com.example.practice.user.repository.UserRepository
-import com.example.practice.user.validation.UserValidationService
+import com.example.practice.user.service.UserService
 
-import org.springframework.graphql.data.method.annotation.QueryMapping
-import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.Argument
+import org.springframework.graphql.data.method.annotation.MutationMapping
+import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.stereotype.Controller
-import reactor.core.publisher.Mono
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
-// GraphQL controller for User queries.
 @Controller
-class UserController(
-    private val userRepository: UserRepository
-) {
-    @QueryMapping
-    fun users(): Flux<User> = userRepository.findAll()
-}
+class UserController(private val userService: UserService) {
 
-// Mutation controller for User entity
-@Controller
-class UserMutationController(
-    private val userRepository: UserRepository,
-    private val userValidationService: UserValidationService
-) {
+    @QueryMapping(name = "users")
+    fun users(): Flux<User> = userService.findAll()
+
+    @QueryMapping(name = "user")
+    fun findById(@Argument id: String): Mono<User> = userService.findById(id)
+
     @MutationMapping
     fun createUser(
-        @Argument username: String,
+        @Argument name: String,
         @Argument email: String,
         @Argument password: String
-    ): Mono<User> {
-        return userValidationService.validateUserForCreate(username, email, password).flatMap { validationResult ->
-            if (!validationResult.isValid) {
-                Mono.error<User>(IllegalArgumentException(validationResult.errorMessage))
-            }
-            else {
-                val user = User(username = username, email = email, password = password)
-                userRepository.save(user)
-            }
-        }
-    }
+    ): Mono<User> = userService.createUser(name, email, password)
 
     @MutationMapping
     fun updateUser(
         @Argument id: String,
-        @Argument username: String?,
+        @Argument name: String?,
         @Argument email: String?,
-        @Argument password: String?
-    ): Mono<User> {
-        return userRepository.findById(id).flatMap { existingUser ->
-            val newUsername = username ?: existingUser.username
-            val newEmail = email ?: existingUser.email
-            val newPassword = password ?: existingUser.password
-            userValidationService.validateUserForUpdate(id, newUsername, newEmail, newPassword).flatMap { validationResult ->
-                if (!validationResult.isValid) {
-                    Mono.error<User>(IllegalArgumentException(validationResult.errorMessage))
-                }
-                else {
-                    val updatedUser = existingUser.copy(
-                        username = newUsername,
-                        email = newEmail,
-                        password = newPassword
-                    )
-                    userRepository.save(updatedUser)
-                }
-            }
-        }
-    }
+        @Argument password: String?,
+    ): Mono<User> = userService.updateUser(id, name, email, password)
 
     @MutationMapping
-    fun deleteUser(
-        @Argument id: String
-    ): Mono<Boolean> {
-        return userRepository.existsById(id).flatMap { exists ->
-            if (!exists) Mono.just(false)
-            else userRepository.deleteById(id).thenReturn(true)
-        }
-    }
+    fun deleteUser(@Argument id: String): Mono<Boolean> = userService.deleteUser(id)
 }

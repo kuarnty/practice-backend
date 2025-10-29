@@ -5,7 +5,7 @@ package com.example.practice.common.validation
  * - isValid: true when validation passed.
  * - errorMessage: user-facing message for the first (or summary) error.
  * - fieldErrors: optional map of field -> error message for structured reporting.
- * - code: optional error code (eg. "USERNAME_EXISTS", "INVALID_EMAIL")
+ * - code: optional error code (eg. "NAME_EXISTS", "INVALID_EMAIL")
  */
 data class ValidationResult(
     val isValid: Boolean,

@@ -14,13 +14,13 @@ class UserValidationService(
 ) {
     private val emailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
 
-    fun validateUserForCreate(username: String?, email: String?, password: String?): Mono<ValidationResult> {
+    fun validateUserForCreate(name: String?, email: String?, password: String?): Mono<ValidationResult> {
         // synchronous checks using CommonValidation
-        CommonValidation.requireNonBlank(username, "Username")?.let {
-            return Mono.just(ValidationResult.fail(it, mapOf("username" to it), "USERNAME_REQUIRED"))
+        CommonValidation.requireNonBlank(name, "Name")?.let {
+            return Mono.just(ValidationResult.fail(it, mapOf("name" to it), "NAME_REQUIRED"))
         }
-        CommonValidation.lengthBetween(username, "Username", 2, 20)?.let {
-            return Mono.just(ValidationResult.fail(it, mapOf("username" to it), "USERNAME_LENGTH"))
+        CommonValidation.lengthBetween(name, "Name", 2, 20)?.let {
+            return Mono.just(ValidationResult.fail(it, mapOf("name" to it), "NAME_LENGTH"))
         }
 
         CommonValidation.requireNonBlank(email, "Email")?.let {
@@ -41,9 +41,9 @@ class UserValidationService(
         }
 
         // asynchronous uniqueness checks
-        return userRepository.existsByUsername(username!!).flatMap { existsByUsername ->
-            if (existsByUsername) {
-                Mono.just(ValidationResult.fail("Username already exists.", mapOf("username" to "exists"), "USERNAME_EXISTS"))
+        return userRepository.existsByName(name!!).flatMap { existsByName ->
+            if (existsByName) {
+                Mono.just(ValidationResult.fail("Name already exists.", mapOf("name" to "exists"), "NAME_EXISTS"))
             } else {
                 userRepository.existsByEmail(email!!).map { existsByEmail ->
                     if (existsByEmail) ValidationResult.fail("Email already exists.", mapOf("email" to "exists"), "EMAIL_EXISTS")
@@ -53,12 +53,12 @@ class UserValidationService(
         }
     }
 
-    fun validateUserForUpdate(currentId: String, username: String?, email: String?, password: String?): Mono<ValidationResult> {
-        CommonValidation.requireNonBlank(username, "Username")?.let {
-            return Mono.just(ValidationResult.fail(it, mapOf("username" to it), "USERNAME_REQUIRED"))
+    fun validateUserForUpdate(currentId: String, name: String?, email: String?, password: String?): Mono<ValidationResult> {
+        CommonValidation.requireNonBlank(name, "Name")?.let {
+            return Mono.just(ValidationResult.fail(it, mapOf("name" to it), "NAME_REQUIRED"))
         }
-        CommonValidation.lengthBetween(username, "Username", 2, 20)?.let {
-            return Mono.just(ValidationResult.fail(it, mapOf("username" to it), "USERNAME_LENGTH"))
+        CommonValidation.lengthBetween(name, "Name", 2, 20)?.let {
+            return Mono.just(ValidationResult.fail(it, mapOf("name" to it), "NAME_LENGTH"))
         }
 
         CommonValidation.requireNonBlank(email, "Email")?.let {
@@ -79,9 +79,9 @@ class UserValidationService(
         }
 
         // asynchronous uniqueness checks excluding currentId
-        return userRepository.existsByUsernameAndIdNot(username!!, currentId).flatMap { usernameConflict ->
-            if (usernameConflict) {
-                Mono.just(ValidationResult.fail("Username already exists.", mapOf("username" to "exists"), "USERNAME_EXISTS"))
+        return userRepository.existsByNameAndIdNot(name!!, currentId).flatMap { nameConflict ->
+            if (nameConflict) {
+                Mono.just(ValidationResult.fail("Name already exists.", mapOf("name" to "exists"), "NAME_EXISTS"))
             } else {
                 userRepository.existsByEmailAndIdNot(email!!, currentId).map { emailConflict ->
                     if (emailConflict) ValidationResult.fail("Email already exists.", mapOf("email" to "exists"), "EMAIL_EXISTS")

@@ -1,16 +1,16 @@
 type Query {
-     hello: String
+    hello: String
     users: [User!]!
-     lectures: [Lecture!]!
-     enrollments: [Enrollment!]!
+    lectures: [Lecture!]!
+    enrollments: [Enrollment!]!
 }
 
 # User type represents a registered user in the system.
 type User {
-     id: ID!
-     username: String!
-     email: String!
-     createdAt: String!
+    id: ID!
+    username: String!
+    email: String!
+    createdAt: String!
 }
 
 """Lecture type represents an online course or content."""

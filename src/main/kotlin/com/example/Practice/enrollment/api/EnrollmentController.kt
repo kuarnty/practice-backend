@@ -1,12 +1,12 @@
-package com.example.practice.controller
+package com.example.practice.enrollment.api
 
-import com.example.practice.model.Enrollment
-import com.example.practice.model.User
-import com.example.practice.model.Lecture
-import com.example.practice.repository.EnrollmentRepository
-import com.example.practice.repository.UserRepository
-import com.example.practice.repository.LectureRepository
-import com.example.practice.validation.ValidationService
+import com.example.practice.enrollment.model.Enrollment
+import com.example.practice.enrollment.repository.EnrollmentRepository
+import com.example.practice.enrollment.validation.EnrollmentValidationService
+import com.example.practice.user.model.User
+import com.example.practice.user.repository.UserRepository
+import com.example.practice.lecture.model.Lecture
+import com.example.practice.lecture.repository.LectureRepository
 
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.graphql.data.method.annotation.MutationMapping
@@ -29,19 +29,21 @@ class EnrollmentController(
 @Controller
 class EnrollmentMutationController(
     private val enrollmentRepository: EnrollmentRepository,
-    private val validationService: ValidationService
+    private val enrollmentValidationService: EnrollmentValidationService
 ) {
     @MutationMapping
     fun createEnrollment(
         @Argument userId: String,
         @Argument lectureId: String
     ): Mono<Enrollment> {
-        return validationService.validateEnrollment(userId, lectureId).flatMap { validationResult ->
+        return enrollmentValidationService.validateEnrollmentForCreate(userId, lectureId).flatMap { validationResult ->
             if (!validationResult.isValid) {
-                return@flatMap Mono.error<Enrollment>(IllegalArgumentException(validationResult.errorMessage))
+                Mono.error<Enrollment>(IllegalArgumentException(validationResult.errorMessage))
             }
-            val enrollment = Enrollment(userId = userId, lectureId = lectureId)
-            enrollmentRepository.save(enrollment)
+            else {
+                val enrollment = Enrollment(userId = userId, lectureId = lectureId)
+                enrollmentRepository.save(enrollment)
+            }
         }
     }
 
@@ -54,15 +56,17 @@ class EnrollmentMutationController(
         return enrollmentRepository.findById(id).flatMap { existingEnrollment ->
             val newUserId = userId ?: existingEnrollment.userId
             val newLectureId = lectureId ?: existingEnrollment.lectureId
-            validationService.validateEnrollment(newUserId, newLectureId).flatMap { validationResult ->
+            enrollmentValidationService.validateEnrollmentForUpdate(id, newUserId, newLectureId).flatMap { validationResult ->
                 if (!validationResult.isValid) {
-                    return@flatMap Mono.error<Enrollment>(IllegalArgumentException(validationResult.errorMessage))
+                    Mono.error<Enrollment>(IllegalArgumentException(validationResult.errorMessage))
                 }
-                val updatedEnrollment = existingEnrollment.copy(
-                    userId = newUserId,
-                    lectureId = newLectureId
-                )
-                enrollmentRepository.save(updatedEnrollment)
+                else {
+                    val updatedEnrollment = existingEnrollment.copy(
+                        userId = newUserId,
+                        lectureId = newLectureId
+                        )
+                    enrollmentRepository.save(updatedEnrollment)
+                }
             }
         }
     }
@@ -72,8 +76,8 @@ class EnrollmentMutationController(
         @Argument id: String
     ): Mono<Boolean> {
         return enrollmentRepository.existsById(id).flatMap { exists ->
-            if (!exists) return@flatMap Mono.just(false)
-            enrollmentRepository.deleteById(id).thenReturn(true)
+            if (!exists) Mono.just(false)
+            else enrollmentRepository.deleteById(id).thenReturn(true)
         }
     }
 }

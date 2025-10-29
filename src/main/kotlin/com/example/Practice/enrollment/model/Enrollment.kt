@@ -1,4 +1,4 @@
-package com.example.practice.model
+package com.example.practice.enrollment.model
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document

@@ -3,7 +3,7 @@
 build/
 !gradle/wrapper/gradle-wrapper.jar
 
-# Maven (만약 쓸 경우)
+# Maven
 target/
 
 # IDEs
@@ -40,6 +40,22 @@ Thumbs.db
 .env
 *.env
 .env.*
+
+# Certificates / keystores / private keys
+src/main/resources/keystore.p12
+# - Common keystore/key formats
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# - Private key / PEM files
+*.key
+*.pem
+*.csr
+
+# - exported certs (optional)
+server.crt
 
 # Others
 HELP.md

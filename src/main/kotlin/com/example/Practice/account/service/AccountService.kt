@@ -1,8 +1,8 @@
-package com.example.practice.user.service
+package com.example.practice.account.service
 
-import com.example.practice.user.model.User
-import com.example.practice.user.repository.UserRepository
-import com.example.practice.user.validation.UserValidationService
+import com.example.practice.account.model.Account
+import com.example.practice.account.repository.AccountRepository
+import com.example.practice.account.validation.AccountValidationService
 
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
@@ -11,22 +11,23 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 
 @Service
-class UserService(
-    private val userRepository: UserRepository,
-    private val userValidationService: UserValidationService
+class AccountService(
+    private val accountRepository: AccountRepository,
+    private val accountValidationService: AccountValidationService
 ) {
     
-    fun findAll(): Flux<User> = userRepository.findAll()
-    fun findById(id: String): Mono<User> = userRepository.findById(id)
+    fun findAll(): Flux<Account> = accountRepository.findAll()
+    
+    fun findById(id: String): Mono<Account> = accountRepository.findById(id)
 
-    fun createUser(name: String, email: String, password: String): Mono<User> {
-        return userValidationService.validateUserForCreate(name, email, password)
+    fun createAccount(name: String, email: String, password: String): Mono<Account> {
+        return accountValidationService.validateAccountForCreate(name, email, password)
             .flatMap { vr ->
                 if (!vr.isValid) {
                     return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
                 }
 
-                val user = User(
+                val account = Account(
                     id = null,
                     name = name,
                     email = email,
@@ -34,7 +35,7 @@ class UserService(
                     createdAt = Instant.now()
                 )
 
-                userRepository.save(user)
+                accountRepository.save(account)
                     .onErrorResume { ex ->
                         val isDuplicate = ex is DuplicateKeyException ||
                                 (ex.cause is com.mongodb.MongoWriteException &&
@@ -45,18 +46,18 @@ class UserService(
             }
     }
 
-    fun updateUser(id: String, name: String?, email: String?, password: String?): Mono<User> {
-        return userValidationService.validateUserForUpdate(id, name, email, password)
+    fun updateAccount(id: String, name: String?, email: String?, password: String?): Mono<Account> {
+        return accountValidationService.validateAccountForUpdate(id, name, email, password)
             .flatMap { vr ->
                 if (!vr.isValid) return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
 
-                userRepository.findById(id).flatMap { existing ->
+                accountRepository.findById(id).flatMap { existing ->
                     val updated = existing.copy(
                         name = name ?: existing.name,
                         email = email ?: existing.email,
                         password = password ?: existing.password
                     )
-                    userRepository.save(updated)
+                    accountRepository.save(updated)
                         .onErrorResume { ex ->
                             val isDuplicate = ex is DuplicateKeyException ||
                                     (ex.cause is com.mongodb.MongoWriteException &&
@@ -68,9 +69,9 @@ class UserService(
             }
     }
 
-    fun deleteUser(id: String): Mono<Boolean> {
-        return userRepository.findById(id)
-            .flatMap { _ -> userRepository.deleteById(id).then(Mono.just(true)) }
+    fun deleteAccount(id: String): Mono<Boolean> {
+        return accountRepository.findById(id)
+            .flatMap { _ -> accountRepository.deleteById(id).then(Mono.just(true)) }
             .defaultIfEmpty(false)
     }
 }

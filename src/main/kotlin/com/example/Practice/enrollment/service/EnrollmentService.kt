@@ -20,15 +20,15 @@ class EnrollmentService(
 
     fun findById(id: String): Mono<Enrollment> = enrollmentRepository.findById(id)
 
-    fun createEnrollment(userId: String?, lectureId: String?): Mono<Enrollment> {
-        return enrollmentValidationService.validateEnrollmentForCreate(userId, lectureId)
+    fun createEnrollment(accountId: String, lectureId: String): Mono<Enrollment> {
+        return enrollmentValidationService.validateEnrollmentForCreate(accountId, lectureId)
             .flatMap { vr ->
                 if (!vr.isValid) return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
 
                 val enrollment = Enrollment(
                     id = null,
-                    userId = userId!!,
-                    lectureId = lectureId!!,
+                    accountId = accountId,
+                    lectureId = lectureId,
                     progress = 0.0f,
                     grade = null
                 )
@@ -47,13 +47,13 @@ class EnrollmentService(
             }
     }
 
-    fun updateEnrollment(id: String, userId: String?, lectureId: String?, progress: Float?, grade: String?): Mono<Enrollment> {
-        return enrollmentValidationService.validateEnrollmentForUpdate(id, userId, lectureId)
+    fun updateEnrollment(id: String, accountId: String?, lectureId: String?, progress: Float?, grade: String?): Mono<Enrollment> {
+        return enrollmentValidationService.validateEnrollmentForUpdate(id, accountId, lectureId)
             .flatMap { vr ->
                 if (!vr.isValid) return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
                 enrollmentRepository.findById(id).flatMap { existing ->
                     val updated = existing.copy(
-                        userId = userId ?: existing.userId,
+                        accountId = accountId ?: existing.accountId,
                         lectureId = lectureId ?: existing.lectureId,
                         progress = progress ?: existing.progress,
                         grade = grade ?: existing.grade,
@@ -64,7 +64,7 @@ class EnrollmentService(
                             val isDuplicate = ex is DuplicateKeyException ||
                                     (ex.cause is com.mongodb.MongoWriteException &&
                                             (ex.cause as com.mongodb.MongoWriteException).error.category == com.mongodb.ErrorCategory.DUPLICATE_KEY)
-                            if (isDuplicate) Mono.error(IllegalArgumentException("Another enrollment with same user and lecture exists."))
+                            if (isDuplicate) Mono.error(IllegalArgumentException("Another enrollment with same account and lecture exists."))
                             else Mono.error(ex)
                         }
                 }

@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono
 import reactor.core.publisher.Flux
 
 interface EnrollmentRepository : ReactiveMongoRepository<Enrollment, String> {
-    fun existsByUserIdAndLectureId(userId: String, lectureId: String): Mono<Boolean>
-    fun existsByUserIdAndLectureIdAndIdNot(userId: String, lectureId: String, id: String): Mono<Boolean>
+    fun existsByAccountIdAndLectureId(accounotId: String, lectureId: String): Mono<Boolean>
+    fun existsByAccountIdAndLectureIdAndIdNot(accoundId: String, lectureId: String, id: String): Mono<Boolean>
 }

@@ -1,6 +1,6 @@
-package com.example.practice.user.validation
+package com.example.practice.account.validation
 
-import com.example.practice.user.repository.UserRepository
+import com.example.practice.account.repository.AccountRepository
 
 import com.example.practice.common.validation.CommonValidation
 import com.example.practice.common.validation.ValidationResult
@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class UserValidationService(
-    private val userRepository: UserRepository
+class AccountValidationService(
+    private val accountRepository: AccountRepository
 ) {
     private val emailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
 
-    fun validateUserForCreate(name: String?, email: String?, password: String?): Mono<ValidationResult> {
+    fun validateAccountForCreate(name: String?, email: String?, password: String?): Mono<ValidationResult> {
         // synchronous checks using CommonValidation
         CommonValidation.requireNonBlank(name, "Name")?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("name" to it), "NAME_REQUIRED"))
@@ -41,11 +41,11 @@ class UserValidationService(
         }
 
         // asynchronous uniqueness checks
-        return userRepository.existsByName(name!!).flatMap { existsByName ->
+        return accountRepository.existsByName(name!!).flatMap { existsByName ->
             if (existsByName) {
                 Mono.just(ValidationResult.fail("Name already exists.", mapOf("name" to "exists"), "NAME_EXISTS"))
             } else {
-                userRepository.existsByEmail(email!!).map { existsByEmail ->
+                accountRepository.existsByEmail(email!!).map { existsByEmail ->
                     if (existsByEmail) ValidationResult.fail("Email already exists.", mapOf("email" to "exists"), "EMAIL_EXISTS")
                     else ValidationResult.OK
                 }
@@ -53,7 +53,7 @@ class UserValidationService(
         }
     }
 
-    fun validateUserForUpdate(currentId: String, name: String?, email: String?, password: String?): Mono<ValidationResult> {
+    fun validateAccountForUpdate(currentId: String, name: String?, email: String?, password: String?): Mono<ValidationResult> {
         CommonValidation.requireNonBlank(name, "Name")?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("name" to it), "NAME_REQUIRED"))
         }
@@ -79,11 +79,11 @@ class UserValidationService(
         }
 
         // asynchronous uniqueness checks excluding currentId
-        return userRepository.existsByNameAndIdNot(name!!, currentId).flatMap { nameConflict ->
+        return accountRepository.existsByNameAndIdNot(name!!, currentId).flatMap { nameConflict ->
             if (nameConflict) {
                 Mono.just(ValidationResult.fail("Name already exists.", mapOf("name" to "exists"), "NAME_EXISTS"))
             } else {
-                userRepository.existsByEmailAndIdNot(email!!, currentId).map { emailConflict ->
+                accountRepository.existsByEmailAndIdNot(email!!, currentId).map { emailConflict ->
                     if (emailConflict) ValidationResult.fail("Email already exists.", mapOf("email" to "exists"), "EMAIL_EXISTS")
                     else ValidationResult.OK
                 }

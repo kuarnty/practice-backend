@@ -2,8 +2,8 @@ package com.example.practice.enrollment.api
 
 import com.example.practice.enrollment.model.Enrollment
 import com.example.practice.enrollment.service.EnrollmentService
-import com.example.practice.user.model.User
-import com.example.practice.user.service.UserService
+import com.example.practice.account.model.Account
+import com.example.practice.account.service.AccountService
 import com.example.practice.lecture.model.Lecture
 import com.example.practice.lecture.service.LectureService
 
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono
 @Controller
 class EnrollmentController(
     private val enrollmentService: EnrollmentService,
-    private val userService: UserService,
+    private val accountService: AccountService,
     private val lectureService: LectureService
 ) {
 
@@ -29,19 +29,19 @@ class EnrollmentController(
     fun findById(@Argument id: String): Mono<Enrollment> = enrollmentService.findById(id)
 
     @MutationMapping
-    fun createEnrollment(@Argument userId: String?, @Argument lectureId: String?): Mono<Enrollment> =
-        enrollmentService.createEnrollment(userId, lectureId)
+    fun createEnrollment(@Argument accountId: String, @Argument lectureId: String): Mono<Enrollment> =
+        enrollmentService.createEnrollment(accountId, lectureId)
 
     @MutationMapping
-    fun updateEnrollment(@Argument id: String, @Argument userId: String?, @Argument lectureId: String?, @Argument progress: Float?, @Argument grade: String?): Mono<Enrollment> =
-        enrollmentService.updateEnrollment(id, userId, lectureId, progress, grade)
+    fun updateEnrollment(@Argument id: String, @Argument accountId: String?, @Argument lectureId: String?, @Argument progress: Float?, @Argument grade: String?): Mono<Enrollment> =
+        enrollmentService.updateEnrollment(id, accountId, lectureId, progress, grade)
 
     @MutationMapping
     fun deleteEnrollment(@Argument id: String): Mono<Boolean> =
         enrollmentService.deleteEnrollment(id)
 
-    @SchemaMapping(typeName = "Enrollment", field = "user")
-    fun user(enrollment: Enrollment): Mono<User> = userService.findById(enrollment.userId)
+    @SchemaMapping(typeName = "Enrollment", field = "account")
+    fun account(enrollment: Enrollment): Mono<Account> = accountService.findById(enrollment.accountId)
 
     @SchemaMapping(typeName = "Enrollment", field = "lecture")
     fun lecture(enrollment: Enrollment): Mono<Lecture> = lectureService.findById(enrollment.lectureId)

@@ -1,6 +1,6 @@
-package com.example.practice.enrollment.validation
+package com.example.practice.study.validation
 
-import com.example.practice.enrollment.repository.EnrollmentRepository
+import com.example.practice.study.repository.StudyRepository
 import com.example.practice.lecture.repository.LectureRepository
 import com.example.practice.account.repository.AccountRepository
 
@@ -11,12 +11,12 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class EnrollmentValidationService(
+class StudyValidationService(
     private val accountRepository: AccountRepository,
     private val lectureRepository: LectureRepository,
-    private val enrollmentRepository: EnrollmentRepository
+    private val studyRepository: StudyRepository
 ) {
-    fun validateEnrollmentForCreate(accountId: String, lectureId: String): Mono<ValidationResult> {
+    fun validateStudyForCreate(accountId: String, lectureId: String): Mono<ValidationResult> {
         CommonValidation.requireNonBlank(accountId, "Account ID")?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("accountId" to it), "Account_ID_REQUIRED"))
         }
@@ -31,7 +31,7 @@ class EnrollmentValidationService(
                 lectureRepository.existsById(lectureId).flatMap { lectureExists ->
                     if (!lectureExists) Mono.just(ValidationResult.fail("Lecture not found.", mapOf("lectureId" to "not_found"), "LECTURE_NOT_FOUND"))
                     else {
-                        enrollmentRepository.existsByAccountIdAndLectureId(accountId, lectureId).map { enrolled ->
+                        studyRepository.existsByAccountIdAndLectureId(accountId, lectureId).map { enrolled ->
                             if (enrolled) ValidationResult.fail("Account is already enrolled in this lecture.", mapOf("accountId" to "already_enrolled"), "ALREADY_ENROLLED")
                             else ValidationResult.OK
                         }
@@ -41,7 +41,7 @@ class EnrollmentValidationService(
         }
     }
 
-    fun validateEnrollmentForUpdate(currentId: String, accountId: String?, lectureId: String?): Mono<ValidationResult> {
+    fun validateStudyForUpdate(currentId: String, accountId: String?, lectureId: String?): Mono<ValidationResult> {
         CommonValidation.requireNonBlank(accountId, "Account ID")?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("accountId" to it), "ACCOUNT_ID_REQUIRED"))
         }
@@ -55,8 +55,8 @@ class EnrollmentValidationService(
                 lectureRepository.existsById(lectureId!!).flatMap { lectureExists ->
                     if (!lectureExists) Mono.just(ValidationResult.fail("Lecture not found.", mapOf("lectureId" to "not_found"), "LECTURE_NOT_FOUND"))
                     else {
-                        enrollmentRepository.existsByAccountIdAndLectureIdAndIdNot(accountId, lectureId, currentId).map { conflict ->
-                        if (conflict) ValidationResult.fail("Another enrollment with same account and lecture already exists.", mapOf("accountId" to "conflict"), "ENROLLMENT_CONFLICT")
+                        studyRepository.existsByAccountIdAndLectureIdAndIdNot(accountId, lectureId, currentId).map { conflict ->
+                        if (conflict) ValidationResult.fail("Another study with same account and lecture already exists.", mapOf("accountId" to "conflict"), "STUDY_CONFLICT")
                         else ValidationResult.OK
                         }
                     }

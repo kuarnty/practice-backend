@@ -12,7 +12,7 @@ data class Lecture(
     @Id val id: String? = null,                 // Unique identifier for the lecture
     val title: String,                          // Title of the lecture
     val description: String?,                   // Description of the lecture content
-    val instructor: String,                     // Name of the instructor
+    val teacherId: String,                     // Name of the teacher
     val createdAt: Instant = Instant.now(),     // Timestamp when the lecture was created
     val updatedAt: Instant = Instant.now()      // Timestamp for the last update to the lecture record
 )

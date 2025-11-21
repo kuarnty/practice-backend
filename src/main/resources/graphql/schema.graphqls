@@ -2,6 +2,7 @@ type Query {
     hello: String
     accounts: [Account!]!
     lectures: [Lecture!]!
+    studies: [Study!]!
     enrollments: [Enrollment!]!
 }
 
@@ -14,13 +15,33 @@ type Account {
     createdAt: String!
 }
 
+type Student {
+    id: ID!
+    accountId: ID!
+}
+
+type Teacher {
+    id: ID!
+    accountId: ID!
+}
+
 # Lecture type represents an online course or content.
 type Lecture {
     id: ID!
     title: String!
     description: String
-    instructor: String!
+    teacher: Teacher!
     createdAt: String!
+    updatedAt: String!
+}
+
+type Study {
+    id: ID!
+    student: Student!
+    lecture: Lecture!
+    progress: Float!
+    grade: String
+    enrolledAt: String!
     updatedAt: String!
 }
 
@@ -41,10 +62,15 @@ type Mutation {
     deleteAccount(id: ID!): Boolean!
 
     #Lecture
-    createLecture(title: String!, description: String!, instructor: String!): Lecture!
-    updateLecture(id: ID!, title: String, description: String, instructor: String): Lecture!
+    createLecture(title: String!, description: String!, teacher: String!): Lecture!
+    updateLecture(id: ID!, title: String, description: String, teacher: String): Lecture!
     deleteLecture(id: ID!): Boolean!
     
+    #Study
+    createStudy(accountId: ID!, lectureId: ID!): Study!
+    updateStudy(id: ID!, accountId: ID, lectureId: ID): Study!
+    deleteStudy(id: ID!): Boolean!
+
     #Enrollment
     createEnrollment(accountId: ID!, lectureId: ID!): Enrollment!
     updateEnrollment(id: ID!, accountId: ID, lectureId: ID): Enrollment!

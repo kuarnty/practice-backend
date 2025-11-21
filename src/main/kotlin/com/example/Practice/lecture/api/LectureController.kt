@@ -23,16 +23,16 @@ class LectureController(private val lectureService: LectureService) {
     fun createLecture(
         @Argument title: String?,
         @Argument description: String?,
-        @Argument instructor: String
-    ): Mono<Lecture> = lectureService.createLecture(title, description, instructor)
+        @Argument teacher: String
+    ): Mono<Lecture> = lectureService.createLecture(title, description, teacher)
 
     @MutationMapping
     fun updateLecture(
         @Argument id: String,
         @Argument title: String?,
         @Argument description: String?,
-        @Argument instructor: String?
-    ): Mono<Lecture> = lectureService.updateLecture(id, title, description, instructor)
+        @Argument teacherId: String?
+    ): Mono<Lecture> = lectureService.updateLecture(id, title, description, teacherId)
 
     @MutationMapping
     fun deleteLecture(@Argument id: String): Mono<Boolean> = lectureService.deleteLecture(id)

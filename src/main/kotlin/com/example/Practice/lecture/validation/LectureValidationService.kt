@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
 class LectureValidationService(
     private val lectureRepository: LectureRepository
 ) {
-    fun validateLectureForCreate(title: String?, description: String?, instructor: String?): Mono<ValidationResult> {
+    fun validateLectureForCreate(title: String?, description: String?, teacherId: String?): Mono<ValidationResult> {
         CommonValidation.requireNonBlank(title, "Lecture title")?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("title" to it), "TITLE_REQUIRED"))
         }
@@ -24,11 +24,11 @@ class LectureValidationService(
             return Mono.just(ValidationResult.fail(it, mapOf("description" to it), "DESCRIPTION_LENGTH"))
         }
 
-        CommonValidation.requireNonBlank(instructor, "Instructor")?.let {
-            return Mono.just(ValidationResult.fail(it, mapOf("instructor" to it), "INSTRUCTOR_REQUIRED"))
+        CommonValidation.requireNonBlank(teacherId, "Teacher ID")?.let {
+            return Mono.just(ValidationResult.fail(it, mapOf("teacher" to it), "TEACHER_ID_REQUIRED"))
         }
-        CommonValidation.lengthBetween(instructor, "Instructor", 2, 30)?.let {
-            return Mono.just(ValidationResult.fail(it, mapOf("instructor" to it), "INSTRUCTOR_LENGTH"))
+        CommonValidation.lengthBetween(teacherId, "Teacher ID", 2, 30)?.let {
+            return Mono.just(ValidationResult.fail(it, mapOf("teacher" to it), "TEACHER_ID_LENGTH"))
         }
 
         return lectureRepository.existsByTitle(title!!).map { exists ->
@@ -37,7 +37,7 @@ class LectureValidationService(
         }
     }
 
-    fun validateLectureForUpdate(currentId: String, title: String?, description: String?, instructor: String?): Mono<ValidationResult> {
+    fun validateLectureForUpdate(currentId: String, title: String?, description: String?, teacherId: String?): Mono<ValidationResult> {
         CommonValidation.requireNonBlank(title, "Lecture title")?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("title" to it), "TITLE_REQUIRED"))
         }
@@ -49,11 +49,11 @@ class LectureValidationService(
             return Mono.just(ValidationResult.fail(it, mapOf("description" to it), "DESCRIPTION_LENGTH"))
         }
 
-        CommonValidation.requireNonBlank(instructor, "Instructor")?.let {
-            return Mono.just(ValidationResult.fail(it, mapOf("instructor" to it), "INSTRUCTOR_REQUIRED"))
+        CommonValidation.requireNonBlank(teacherId, "Teacher ID")?.let {
+            return Mono.just(ValidationResult.fail(it, mapOf("teacher" to it), "TEACHER_ID_REQUIRED"))
         }
-        CommonValidation.lengthBetween(instructor, "Instructor", 2, 30)?.let {
-            return Mono.just(ValidationResult.fail(it, mapOf("instructor" to it), "INSTRUCTOR_LENGTH"))
+        CommonValidation.lengthBetween(teacherId, "Teacher ID", 2, 30)?.let {
+            return Mono.just(ValidationResult.fail(it, mapOf("teacher" to it), "TEACHER_ID_LENGTH"))
         }
 
         return lectureRepository.existsByTitleAndIdNot(title!!, currentId).map { conflict ->

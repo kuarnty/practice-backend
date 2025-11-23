@@ -20,14 +20,14 @@ class StudyService(
 
     fun findById(id: String): Mono<Study> = studyRepository.findById(id)
 
-    fun createStudy(accountId: String, lectureId: String): Mono<Study> {
-        return studyValidationService.validateStudyForCreate(accountId, lectureId)
+    fun createStudy(userId: String, lectureId: String): Mono<Study> {
+        return studyValidationService.validateStudyForCreate(userId, lectureId)
             .flatMap { vr ->
                 if (!vr.isValid) return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
 
                 val study = Study(
                     id = null,
-                    accountId = accountId,
+                    userId = userId,
                     lectureId = lectureId,
                     progress = 0.0f,
                     grade = null
@@ -47,13 +47,13 @@ class StudyService(
             }
     }
 
-    fun updateStudy(id: String, accountId: String?, lectureId: String?, progress: Float?, grade: String?): Mono<Study> {
-        return studyValidationService.validateStudyForUpdate(id, accountId, lectureId)
+    fun updateStudy(id: String, userId: String?, lectureId: String?, progress: Float?, grade: String?): Mono<Study> {
+        return studyValidationService.validateStudyForUpdate(id, userId, lectureId)
             .flatMap { vr ->
                 if (!vr.isValid) return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
                 studyRepository.findById(id).flatMap { existing ->
                     val updated = existing.copy(
-                        accountId = accountId ?: existing.accountId,
+                        userId = userId ?: existing.userId,
                         lectureId = lectureId ?: existing.lectureId,
                         progress = progress ?: existing.progress,
                         grade = grade ?: existing.grade,
@@ -64,7 +64,7 @@ class StudyService(
                             val isDuplicate = ex is DuplicateKeyException ||
                                     (ex.cause is com.mongodb.MongoWriteException &&
                                             (ex.cause as com.mongodb.MongoWriteException).error.category == com.mongodb.ErrorCategory.DUPLICATE_KEY)
-                            if (isDuplicate) Mono.error(IllegalArgumentException("Another study with same account and lecture exists."))
+                            if (isDuplicate) Mono.error(IllegalArgumentException("Another study with same user and lecture exists."))
                             else Mono.error(ex)
                         }
                 }

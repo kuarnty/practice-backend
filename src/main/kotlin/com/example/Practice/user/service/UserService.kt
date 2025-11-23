@@ -1,8 +1,8 @@
-package com.example.practice.account.service
+package com.example.practice.user.service
 
-import com.example.practice.account.model.Account
-import com.example.practice.account.repository.AccountRepository
-import com.example.practice.account.validation.AccountValidationService
+import com.example.practice.user.model.User
+import com.example.practice.user.repository.UserRepository
+import com.example.practice.user.validation.UserValidationService
 
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
@@ -11,23 +11,23 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 
 @Service
-class AccountService(
-    private val accountRepository: AccountRepository,
-    private val accountValidationService: AccountValidationService
+class UserService(
+    private val userRepository: UserRepository,
+    private val userValidationService: UserValidationService
 ) {
     
-    fun findAll(): Flux<Account> = accountRepository.findAll()
+    fun findAll(): Flux<User> = userRepository.findAll()
     
-    fun findById(id: String): Mono<Account> = accountRepository.findById(id)
+    fun findById(id: String): Mono<User> = userRepository.findById(id)
 
-    fun createAccount(name: String, email: String, password: String): Mono<Account> {
-        return accountValidationService.validateAccountForCreate(name, email, password)
+    fun createUser(name: String, email: String, password: String): Mono<User> {
+        return userValidationService.validateUserForCreate(name, email, password)
             .flatMap { vr ->
                 if (!vr.isValid) {
                     return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
                 }
 
-                val account = Account(
+                val user = User(
                     id = null,
                     name = name,
                     email = email,
@@ -35,43 +35,43 @@ class AccountService(
                     createdAt = Instant.now()
                 )
 
-                accountRepository.save(account)
+                userRepository.save(user)
                     .onErrorResume { ex ->
                         val isDuplicate = ex is DuplicateKeyException ||
                                 (ex.cause is com.mongodb.MongoWriteException &&
                                         (ex.cause as com.mongodb.MongoWriteException).error.category == com.mongodb.ErrorCategory.DUPLICATE_KEY)
-                        if (isDuplicate) Mono.error(IllegalArgumentException("Account with the same email already exists."))
+                        if (isDuplicate) Mono.error(IllegalArgumentException("User with the same email already exists."))
                         else Mono.error(ex)
                     }
             }
     }
 
-    fun updateAccount(id: String, name: String?, email: String?, password: String?): Mono<Account> {
-        return accountValidationService.validateAccountForUpdate(id, name, email, password)
+    fun updateUser(id: String, name: String?, email: String?, password: String?): Mono<User> {
+        return userValidationService.validateUserForUpdate(id, name, email, password)
             .flatMap { vr ->
                 if (!vr.isValid) return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
 
-                accountRepository.findById(id).flatMap { existing ->
+                userRepository.findById(id).flatMap { existing ->
                     val updated = existing.copy(
                         name = name ?: existing.name,
                         email = email ?: existing.email,
                         password = password ?: existing.password
                     )
-                    accountRepository.save(updated)
+                    userRepository.save(updated)
                         .onErrorResume { ex ->
                             val isDuplicate = ex is DuplicateKeyException ||
                                     (ex.cause is com.mongodb.MongoWriteException &&
                                             (ex.cause as com.mongodb.MongoWriteException).error.category == com.mongodb.ErrorCategory.DUPLICATE_KEY)
-                            if (isDuplicate) Mono.error(IllegalArgumentException("Another account with same email exists."))
+                            if (isDuplicate) Mono.error(IllegalArgumentException("Another user with same email exists."))
                             else Mono.error(ex)
                         }
                 }
             }
     }
 
-    fun deleteAccount(id: String): Mono<Boolean> {
-        return accountRepository.findById(id)
-            .flatMap { _ -> accountRepository.deleteById(id).then(Mono.just(true)) }
+    fun deleteUser(id: String): Mono<Boolean> {
+        return userRepository.findById(id)
+            .flatMap { _ -> userRepository.deleteById(id).then(Mono.just(true)) }
             .defaultIfEmpty(false)
     }
 }

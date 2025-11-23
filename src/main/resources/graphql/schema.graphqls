@@ -1,13 +1,12 @@
 type Query {
     hello: String
-    accounts: [Account!]!
+    users: [User!]!
     lectures: [Lecture!]!
     studies: [Study!]!
-    enrollments: [Enrollment!]!
 }
 
-# Account type represents a registered user in the system.
-type Account {
+# User type represents a registered user in the system.
+type User {
     id: ID!
     name: String!
     email: String!
@@ -15,39 +14,19 @@ type Account {
     createdAt: String!
 }
 
-type Student {
-    id: ID!
-    accountId: ID!
-}
-
-type Teacher {
-    id: ID!
-    accountId: ID!
-}
-
 # Lecture type represents an online course or content.
 type Lecture {
     id: ID!
     title: String!
     description: String
-    teacher: Teacher!
+    user: User!
     createdAt: String!
     updatedAt: String!
 }
 
 type Study {
     id: ID!
-    student: Student!
-    lecture: Lecture!
-    progress: Float!
-    grade: String
-    enrolledAt: String!
-    updatedAt: String!
-}
-
-type Enrollment {
-    id: ID!
-    student: Student!
+    user: User!
     lecture: Lecture!
     progress: Float!
     grade: String
@@ -56,23 +35,18 @@ type Enrollment {
 }
 
 type Mutation {
-    #Account
-    createAccount(name: String!, email: String!, password: String!): Account!
-    updateAccount(id: ID!, name: String, email: String, password: String): Account!
-    deleteAccount(id: ID!): Boolean!
+    #User
+    createUser(name: String!, email: String!, password: String!): User!
+    updateUser(id: ID!, name: String, email: String, password: String): User!
+    deleteUser(id: ID!): Boolean!
 
     #Lecture
-    createLecture(title: String!, description: String!, teacher: String!): Lecture!
-    updateLecture(id: ID!, title: String, description: String, teacher: String): Lecture!
+    createLecture(title: String!, description: String!, user: String!): Lecture!
+    updateLecture(id: ID!, title: String, description: String, user: String): Lecture!
     deleteLecture(id: ID!): Boolean!
     
     #Study
-    createStudy(accountId: ID!, lectureId: ID!): Study!
-    updateStudy(id: ID!, accountId: ID, lectureId: ID): Study!
+    createStudy(userId: ID!, lectureId: ID!): Study!
+    updateStudy(id: ID!, userId: ID, lectureId: ID): Study!
     deleteStudy(id: ID!): Boolean!
-
-    #Enrollment
-    createEnrollment(accountId: ID!, lectureId: ID!): Enrollment!
-    updateEnrollment(id: ID!, accountId: ID, lectureId: ID): Enrollment!
-    deleteEnrollment(id: ID!): Boolean!
 }

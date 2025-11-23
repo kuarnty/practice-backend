@@ -20,8 +20,8 @@ class LectureService(
 
     fun findById(id: String): Mono<Lecture> = lectureRepository.findById(id)
 
-    fun createLecture(title: String?, description: String?, teacherId: String): Mono<Lecture> {
-        return lectureValidationService.validateLectureForCreate(title, description, teacherId)
+    fun createLecture(title: String?, description: String?, userId: String): Mono<Lecture> {
+        return lectureValidationService.validateLectureForCreate(title, description, userId)
             .flatMap { vr ->
                 if (!vr.isValid) return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
 
@@ -30,7 +30,7 @@ class LectureService(
                     id = null,
                     title = title!!,
                     description = description,
-                    teacherId = teacherId,
+                    userId = userId,
                     createdAt = now,
                     updatedAt = now
                 )
@@ -46,8 +46,8 @@ class LectureService(
             }
     }
 
-    fun updateLecture(id: String, title: String?, description: String?, teacherId: String?): Mono<Lecture> {
-        return lectureValidationService.validateLectureForUpdate(id, title, description, teacherId)
+    fun updateLecture(id: String, title: String?, description: String?, userId: String?): Mono<Lecture> {
+        return lectureValidationService.validateLectureForUpdate(id, title, description, userId)
             .flatMap { vr ->
                 if (!vr.isValid) return@flatMap Mono.error(IllegalArgumentException(vr.errorMessage ?: "validation failed"))
 
@@ -55,7 +55,7 @@ class LectureService(
                     val updated = existing.copy(
                         title = title ?: existing.title,
                         description = description ?: existing.description,
-                        teacherId = teacherId ?: existing.teacherId,
+                        userId = userId ?: existing.userId,
                         updatedAt = Instant.now()
                     )
                     lectureRepository.save(updated)

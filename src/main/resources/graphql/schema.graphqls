@@ -1,8 +1,7 @@
 type Query {
     hello: String
     users: [User!]!
-    lectures: [Lecture!]!
-    studies: [Study!]!
+    articles: [Article!]!
 }
 
 # User type represents a registered user in the system.
@@ -14,23 +13,13 @@ type User {
     createdAt: String!
 }
 
-# Lecture type represents an online course or content.
-type Lecture {
+type Article {
     id: ID!
     title: String!
     description: String
-    user: User!
+    authorId: String!
+    content: String
     createdAt: String!
-    updatedAt: String!
-}
-
-type Study {
-    id: ID!
-    user: User!
-    lecture: Lecture!
-    progress: Float!
-    grade: String
-    enrolledAt: String!
     updatedAt: String!
 }
 
@@ -40,13 +29,8 @@ type Mutation {
     updateUser(id: ID!, name: String, email: String, password: String): User!
     deleteUser(id: ID!): Boolean!
 
-    #Lecture
-    createLecture(title: String!, description: String!, user: String!): Lecture!
-    updateLecture(id: ID!, title: String, description: String, user: String): Lecture!
-    deleteLecture(id: ID!): Boolean!
-    
-    #Study
-    createStudy(userId: ID!, lectureId: ID!): Study!
-    updateStudy(id: ID!, userId: ID, lectureId: ID): Study!
-    deleteStudy(id: ID!): Boolean!
+    #Article
+    createArticle(title: String!, description: String, authorId: String!, content: String): Article!
+    updateArticle(id: ID!, title: String, description: String, content: String, authorId: String): Article!
+    deleteArticle(id: ID!): Boolean!
 }

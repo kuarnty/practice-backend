@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Test Page</title>
+</head>
+<body>
+    <h1>GraphQL Communication Test</h1>
+    <form id="graphql-form">
+        <textarea id="query" rows="10" cols="50" placeholder="Enter your GraphQL query here"></textarea><br>
+        <button type="button" onclick="sendQuery()">Send Query</button>
+    </form>
+    <h2>Response:</h2>
+    <pre id="response"></pre>
+
+    <script>
+        async function sendQuery() {
+            const query = document.getElementById('query').value;
+            const responseElement = document.getElementById('response');
+
+            try {
+                const response = await fetch('/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query }),
+                });
+
+                const result = await response.json();
+                responseElement.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                responseElement.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

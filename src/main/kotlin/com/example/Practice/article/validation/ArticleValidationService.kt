@@ -1,6 +1,6 @@
-package com.example.practice.lecture.validation
+package com.example.practice.article.validation
 
-import com.example.practice.lecture.repository.LectureRepository
+import com.example.practice.article.repository.ArticleRepository
 
 import com.example.practice.common.validation.CommonValidation
 import com.example.practice.common.validation.ValidationResult
@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class LectureValidationService(
-    private val lectureRepository: LectureRepository
+class ArticleValidationService(
+    private val articleRepository: ArticleRepository
 ) {
-    fun validateLectureForCreate(title: String?, description: String?, userId: String?): Mono<ValidationResult> {
-        CommonValidation.requireNonBlank(title, "Lecture title")?.let {
+    fun validateArticleForCreate(title: String?, description: String?, userId: String?): Mono<ValidationResult> {
+        CommonValidation.requireNonBlank(title, "Article title")?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("title" to it), "TITLE_REQUIRED"))
         }
-        CommonValidation.lengthBetween(title, "Lecture title", 2, 100)?.let {
+        CommonValidation.lengthBetween(title, "Article title", 2, 100)?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("title" to it), "TITLE_LENGTH"))
         }
 
@@ -31,17 +31,17 @@ class LectureValidationService(
             return Mono.just(ValidationResult.fail(it, mapOf("user" to it), "USER_ID_LENGTH"))
         }
 
-        return lectureRepository.existsByTitle(title!!).map { exists ->
-            if (exists) ValidationResult.fail("Lecture title already exists.", mapOf("title" to "exists"), "TITLE_EXISTS")
+        return articleRepository.existsByTitle(title!!).map { exists ->
+            if (exists) ValidationResult.fail("Article title already exists.", mapOf("title" to "exists"), "TITLE_EXISTS")
             else ValidationResult.OK
         }
     }
 
-    fun validateLectureForUpdate(currentId: String, title: String?, description: String?, userId: String?): Mono<ValidationResult> {
-        CommonValidation.requireNonBlank(title, "Lecture title")?.let {
+    fun validateArticleForUpdate(currentId: String, title: String?, description: String?, userId: String?): Mono<ValidationResult> {
+        CommonValidation.requireNonBlank(title, "Article title")?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("title" to it), "TITLE_REQUIRED"))
         }
-        CommonValidation.lengthBetween(title, "Lecture title", 2, 100)?.let {
+        CommonValidation.lengthBetween(title, "Article title", 2, 100)?.let {
             return Mono.just(ValidationResult.fail(it, mapOf("title" to it), "TITLE_LENGTH"))
         }
 
@@ -56,8 +56,8 @@ class LectureValidationService(
             return Mono.just(ValidationResult.fail(it, mapOf("user" to it), "USER_ID_LENGTH"))
         }
 
-        return lectureRepository.existsByTitleAndIdNot(title!!, currentId).map { conflict ->
-            if (conflict) ValidationResult.fail("Lecture title already exists.", mapOf("title" to "exists"), "TITLE_EXISTS")
+        return articleRepository.existsByTitleAndIdNot(title!!, currentId).map { conflict ->
+            if (conflict) ValidationResult.fail("Article title already exists.", mapOf("title" to "exists"), "TITLE_EXISTS")
             else ValidationResult.OK
         }
     }

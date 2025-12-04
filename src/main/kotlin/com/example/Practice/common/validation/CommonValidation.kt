@@ -8,6 +8,10 @@ package com.example.practice.common.validation
  * before performing any async (repository) checks in domain validation services.
  */
 object CommonValidation {
+        
+    fun requireNonNull(value: String?, fieldName: String): String? =
+        if (value == null) "$fieldName is required." else null
+        
     fun requireNonBlank(value: String?, fieldName: String): String? =
         if (value.isNullOrBlank()) "$fieldName is required and must not be blank." else null
 

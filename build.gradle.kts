@@ -20,19 +20,36 @@ repositories {
 }
 
 dependencies {
+	// Spring Boot Starters (MongoDB Reactive, GraphQL, WebFlux)
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 	implementation("org.springframework.boot:spring-boot-starter-graphql")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.graphql:spring-graphql-test")
+
+	// Kotlin
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("io.projectreactor:reactor-test")
+
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
-	testImplementation("org.springframework.graphql:spring-graphql-test")
+	
+	// Jackson Kotlin module
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+	// Reactor Kotlin extensions
+	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+	testImplementation("io.projectreactor:reactor-test")
+
+	// Testing
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	
+	// JWT and Security
+	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
+	implementation("org.springframework.boot:spring-boot-starter-security")
 }
 
 kotlin {

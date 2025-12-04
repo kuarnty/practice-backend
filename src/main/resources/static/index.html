@@ -7,33 +7,246 @@
 </head>
 <body>
     <h1>GraphQL Communication Test</h1>
-    <form id="graphql-form">
-        <textarea id="query" rows="10" cols="50" placeholder="Enter your GraphQL query here"></textarea><br>
-        <button type="button" onclick="sendQuery()">Send Query</button>
-    </form>
-    <h2>Response:</h2>
-    <pre id="response"></pre>
+
+    <div id="auth-area" style="margin: 24px;">
+        <div id="login-status"></div>
+        <div id="login-form" style="display:none;">
+            <input type="text" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button type="button" onclick="login()">Login</button>
+        </div>
+        <div id="logout-area" style="display:none;">
+            <button type="button" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <h2>Preset Queries and Mutations</h2>
+    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 24px;">
+        <div id="preset-buttons" style="display: flex; flex-direction: row; gap: 8px; width: 300px;">
+        <div>
+            <button type="button" onclick="setQuery('query { hello }')">hello (Query)</button>
+        </div>
+        <div>
+            <button type="button" onclick="setQuery('query { users { id name email password createdAt } }')">users (Query)</button>
+        </div>
+        <div>
+            <button type="button" onclick="setQuery('query { articles { id title description authorId content createdAt updatedAt } }')">articles (Query)</button>
+        </div>
+        <div>
+            <button type="button" onclick="setCreateUserQuery()">createUser (Mutation)</button>
+            <input type="text" id="createUser_name" placeholder="name">
+            <input type="text" id="createUser_email" placeholder="email">
+            <input type="text" id="createUser_password" placeholder="password">
+        </div>
+        <div>
+            <button type="button" onclick="setUpdateUserQuery()">updateUser (Mutation)</button>
+            <input type="text" id="updateUser_id" placeholder="id">
+            <input type="text" id="updateUser_name" placeholder="name">
+            <input type="text" id="updateUser_email" placeholder="email">
+            <input type="text" id="updateUser_password" placeholder="password">
+        </div>
+        <div>
+            <button type="button" onclick="setDeleteUserQuery()">deleteUser (Mutation)</button>
+            <input type="text" id="deleteUser_id" placeholder="id">
+        </div>
+        <div>
+            <button type="button" onclick="setCreateArticleQuery()">createArticle (Mutation)</button>
+            <input type="text" id="createArticle_title" placeholder="title">
+            <input type="text" id="createArticle_description" placeholder="description">
+            <input type="text" id="createArticle_authorId" placeholder="authorId">
+            <input type="text" id="createArticle_content" placeholder="content">
+        </div>
+        <div>
+            <button type="button" onclick="setUpdateArticleQuery()">updateArticle (Mutation)</button>
+            <input type="text" id="updateArticle_id" placeholder="id">
+            <input type="text" id="updateArticle_title" placeholder="title">
+            <input type="text" id="updateArticle_description" placeholder="description">
+            <input type="text" id="updateArticle_content" placeholder="content">
+            <input type="text" id="updateArticle_authorId" placeholder="authorId">
+        </div>
+        <div>
+            <button type="button" onclick="setDeleteArticleQuery()">deleteArticle (Mutation)</button>
+            <input type="text" id="deleteArticle_id" placeholder="id">
+        </div>
+        <div>
+            <button type="button" onclick="setLoginQuery()">login (Mutation)</button>
+            <input type="text" id="login_email" placeholder="email">
+            <input type="password" id="login_password" placeholder="password">
+        </div>
+    </div>
+    <div style="display: flex; flex-direction: column; position: relative; gap: 8px; width: 100%; place-items: initial;">
+    <div style="display: flex; flex-direction: row; gap: 32px; width: 100%; align-items: flex-start;">
+        <!-- Form Section (Left) -->
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" onclick="sendQuery()" style="align-self: flex-start;">Send Query</button>
+            <form id="graphql-form" style="margin: 0;">
+                <textarea id="query" rows="8" cols="50" placeholder="Enter your GraphQL query here" style="width: 100%;"></textarea><br>
+            </form>
+        </div>
+        <!-- Response Section (Right) -->
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" onclick="clearResponse()" style="align-self: flex-start;">Clear</button>
+            <h2 style="margin: 0;">Response:</h2>
+            <pre id="response" style="width: 100%; min-height: 200px;"></pre>
+        </div>
+    </div>
 
     <script>
+                function setQuery(query) {
+                    document.getElementById('query').value = query;
+                }
+
+                // 로그인된 user id 관리
+                function getLoggedInUserId() {
+                    // 실제 user id를 저장하는 방식에 따라 수정 필요
+                    return localStorage.getItem('userId') || '';
+                }
+
+                // 각 쿼리 빌더 함수
+                function setCreateUserQuery() {
+                    let name = document.getElementById('createUser_name').value;
+                    let email = document.getElementById('createUser_email').value;
+                    let password = document.getElementById('createUser_password').value;
+                    name = name.trim() === '' ? null : name;
+                    email = email.trim() === '' ? null : email;
+                    password = password.trim() === '' ? null : password;
+                    setQuery(`mutation { createUser(name: ${name === null ? 'null' : '"' + name + '"'}, email: ${email === null ? 'null' : '"' + email + '"'}, password: ${password === null ? 'null' : '"' + password + '"'}) { id name email password createdAt } }`);
+                }
+                function setUpdateUserQuery() {
+                    let id = document.getElementById('updateUser_id').value;
+                    if (!id) id = getLoggedInUserId();
+                    let name = document.getElementById('updateUser_name').value;
+                    let email = document.getElementById('updateUser_email').value;
+                    let password = document.getElementById('updateUser_password').value;
+                    name = name.trim() === '' ? null : name;
+                    email = email.trim() === '' ? null : email;
+                    password = password.trim() === '' ? null : password;
+                    setQuery(`mutation { updateUser(id: "${id}", name: ${name === null ? 'null' : '"' + name + '"'}, email: ${email === null ? 'null' : '"' + email + '"'}, password: ${password === null ? 'null' : '"' + password + '"'}) { id name email password createdAt } }`);
+                }
+                function setDeleteUserQuery() {
+                    let id = document.getElementById('deleteUser_id').value;
+                    if (!id) id = getLoggedInUserId();
+                    id = id.trim() === '' ? null : id;
+                    setQuery(`mutation { deleteUser(id: ${id === null ? 'null' : '"' + id + '"'}) }`);
+                }
+                function setCreateArticleQuery() {
+                    let title = document.getElementById('createArticle_title').value;
+                    let description = document.getElementById('createArticle_description').value;
+                    let authorId = document.getElementById('createArticle_authorId').value;
+                    if (!authorId) authorId = getLoggedInUserId();
+                    let content = document.getElementById('createArticle_content').value;
+                    title = title.trim() === '' ? null : title;
+                    description = description.trim() === '' ? null : description;
+                    authorId = authorId.trim() === '' ? null : authorId;
+                    content = content.trim() === '' ? null : content;
+                    setQuery(`mutation { createArticle(title: ${title === null ? 'null' : '"' + title + '"'}, description: ${description === null ? 'null' : '"' + description + '"'}, authorId: ${authorId === null ? 'null' : '"' + authorId + '"'}, content: ${content === null ? 'null' : '"' + content + '"'}) { id title description authorId content createdAt updatedAt } }`);
+                }
+                function setUpdateArticleQuery() {
+                    let id = document.getElementById('updateArticle_id').value;
+                    let title = document.getElementById('updateArticle_title').value;
+                    let description = document.getElementById('updateArticle_description').value;
+                    let content = document.getElementById('updateArticle_content').value;
+                    let authorId = document.getElementById('updateArticle_authorId').value;
+                    if (!authorId) authorId = getLoggedInUserId();
+                    id = id.trim() === '' ? null : id;
+                    title = title.trim() === '' ? null : title;
+                    description = description.trim() === '' ? null : description;
+                    content = content.trim() === '' ? null : content;
+                    authorId = authorId.trim() === '' ? null : authorId;
+                    setQuery(`mutation { updateArticle(id: ${id === null ? 'null' : '"' + id + '"'}, title: ${title === null ? 'null' : '"' + title + '"'}, description: ${description === null ? 'null' : '"' + description + '"'}, content: ${content === null ? 'null' : '"' + content + '"'}, authorId: ${authorId === null ? 'null' : '"' + authorId + '"'}) { id title description authorId content createdAt updatedAt } }`);
+                }
+                function setDeleteArticleQuery() {
+                    let id = document.getElementById('deleteArticle_id').value;
+                    id = id.trim() === '' ? null : id;
+                    setQuery(`mutation { deleteArticle(id: ${id === null ? 'null' : '"' + id + '"'}) }`);
+                }
+                function setLoginQuery() {
+                    let email = document.getElementById('login_email').value;
+                    let password = document.getElementById('login_password').value;
+                    email = email.trim() === '' ? null : email;
+                    password = password.trim() === '' ? null : password;
+                    setQuery(`mutation { login(input: { email: ${email === null ? 'null' : '"' + email + '"'}, password: ${password === null ? 'null' : '"' + password + '"'} }) }`);
+                }
+        function updateAuthUI() {
+            const token = localStorage.getItem('jwt');
+            document.getElementById('login-form').style.display = token ? 'none' : 'block';
+            document.getElementById('logout-area').style.display = token ? 'block' : 'none';
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginResult = document.getElementById('login-status');
+            const query = `
+                mutation {
+                    login(input: { email: "${email}", password: "${password}" })
+                }
+            `;
+            try {
+                const response = await fetch('/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query }),
+                });
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+                if (result.data && result.data.login) {
+                    localStorage.setItem('jwt', result.data.login);
+                    // userId를 서버에서 받아서 저장 (JWT 디코딩 또는 별도 반환 필요)
+                    // 예시: result.data.user.id
+                    if (result.data.user && result.data.user.id) {
+                        localStorage.setItem('userId', result.data.user.id);
+                    } else {
+                        // JWT에서 userId 추출 (sub에 email이 들어가는 경우)
+                        // 필요시 JWT 파싱 로직 추가
+                        localStorage.removeItem('userId');
+                    }
+                    loginResult.textContent = 'Login successful! email: ' + email;
+                    updateAuthUI();
+                } else {
+                    loginResult.textContent = 'Login failed!';
+                }
+            } catch (error) {
+                loginResult.textContent = 'Login Error: ' + error.message;
+                document.getElementById('response').textContent = 'Login Error: ' + error.message;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('jwt');
+            localStorage.removeItem('userId');
+            document.getElementById('login-status').textContent = 'Logged out.';
+            updateAuthUI();
+        }
+
         async function sendQuery() {
             const query = document.getElementById('query').value;
             const responseElement = document.getElementById('response');
+            const token = localStorage.getItem('jwt');
 
+            responseElement.textContent = 'Loading...';
+            
             try {
                 const response = await fetch('/graphql', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': 'Bearer ' + token } : {})
                     },
                     body: JSON.stringify({ query }),
                 });
-
                 const result = await response.json();
                 responseElement.textContent = JSON.stringify(result, null, 2);
             } catch (error) {
                 responseElement.textContent = 'Error: ' + error.message;
             }
         }
+
+        function clearResponse() {
+            document.getElementById('response').textContent = '';
+        }
+        // 초기 UI 상태 설정
+        updateAuthUI();
     </script>
 </body>
 </html>

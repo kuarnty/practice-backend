@@ -1,18 +1,71 @@
+# GraphQL Schema Definition
+
+# Queries
 type Query {
     hello: String
+
+    user(id: ID!): User!
     users: [User!]!
+    userSummary(id: ID!): UserSummary!
+    userSummaries: [UserSummary!]!
+
+    article(id: ID!): Article!
     articles: [Article!]!
+    articleSummary(id: ID!): ArticleSummary!
+    articleSummaries: [ArticleSummary!]!
 }
 
-# User type represents a registered user in the system.
+# Mutations
+type Mutation {
+    #User
+    createUser(createUserInput: CreateUserInput!): User!
+    updateUser(updateUserInput: UpdateUserInput!): User!
+    deleteUser(id: ID!): Boolean!
+
+    #Article
+    createArticle(createArticleInput: CreateArticleInput!): Article!
+    updateArticle(updateArticleInput: UpdateArticleInput!): Article!
+    deleteArticle(id: ID!): Boolean!
+
+    #Auth
+    login(input: LoginInput!): AuthPayload!
+    # logout(): Boolean!
+}
+
+#TODO: Subscriptions for real-time updates
+type Subscription {
+    articleCreated: ArticleSummary!
+    articleUpdated: ArticleSummary!
+    articleDeleted: String!
+}
+
+# User Types
 type User {
     id: ID!
+    email: String!
+    name: String!
+    createdAt: String!
+}
+type UserSummary {
+    id: ID!
+    email: String!
+    name: String!
+}
+
+# User Inputs
+input CreateUserInput {
     name: String!
     email: String!
     password: String!
-    createdAt: String!
+}
+input UpdateUserInput {
+    id: ID!
+    name: String
+    email: String
+    password: String
 }
 
+# Article Types
 type Article {
     id: ID!
     title: String!
@@ -22,15 +75,35 @@ type Article {
     createdAt: String!
     updatedAt: String!
 }
+type ArticleSummary {
+    id: ID!
+    title: String!
+    description: String
+    authorId: String!
+    updatedAt: String!
+}
 
-type Mutation {
-    #User
-    createUser(name: String!, email: String!, password: String!): User!
-    updateUser(id: ID!, name: String, email: String, password: String): User!
-    deleteUser(id: ID!): Boolean!
+# Article Inputs
+input CreateArticleInput {
+    title: String!
+    description: String
+    authorId: String!
+    content: String
+}
+input UpdateArticleInput {
+    id: ID!
+    title: String
+    description: String
+    content: String
+    authorId: String
+}
 
-    #Article
-    createArticle(title: String!, description: String, authorId: String!, content: String): Article!
-    updateArticle(id: ID!, title: String, description: String, content: String, authorId: String): Article!
-    deleteArticle(id: ID!): Boolean!
+# Auth Types and Inputs
+type AuthPayload {
+    token: String!
+    user: User!
+}
+input LoginInput {
+    email: String!
+    password: String!
 }

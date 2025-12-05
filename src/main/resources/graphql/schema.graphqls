@@ -18,12 +18,12 @@ type Query {
 # Mutations
 type Mutation {
     #User
-    createUser(createUserInput: CreateUserInput!): User!
+    createUser(createUserInput: CreateUserInput!): Boolean!
     updateUser(updateUserInput: UpdateUserInput!): User!
     deleteUser(id: ID!): Boolean!
 
     #Article
-    createArticle(createArticleInput: CreateArticleInput!): Article!
+    createArticle(createArticleInput: CreateArticleInput!): Boolean!
     updateArticle(updateArticleInput: UpdateArticleInput!): Article!
     deleteArticle(id: ID!): Boolean!
 

@@ -1,12 +1,13 @@
 package com.example.practice.security.jwt
 
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import java.util.*
 
 object JwtUtil {
-    private val secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
+    private val secret: String = System.getenv("JWT_SECRET") ?: "testtesttesttesttesttesttesttest"
+    private val secretKey = Keys.hmacShaKeyFor(secret.toByteArray())
+
     private const val EXPIRATION_TIME = 60 * 60 * 1000 // 1 hour
 
     fun generateToken(email: String): String =

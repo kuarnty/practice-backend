@@ -19,6 +19,4 @@ class AuthService(private val userRepository: UserRepository) {
                 } else null
             }
     }
-
-    fun findUserByEmail(email: String) = userRepository.findByEmail(email)
 }

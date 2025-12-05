@@ -27,7 +27,7 @@
             <button type="button" onclick="setQuery('query { hello }')">hello (Query)</button>
         </div>
         <div>
-            <button type="button" onclick="setQuery('query { users { id name email password createdAt } }')">users (Query)</button>
+            <button type="button" onclick="setQuery('query { users { id name email createdAt } }')">users (Query)</button>
         </div>
         <div>
             <button type="button" onclick="setQuery('query { articles { id title description authorId content createdAt updatedAt } }')">articles (Query)</button>
@@ -110,7 +110,15 @@
                     name = name.trim() === '' ? null : name;
                     email = email.trim() === '' ? null : email;
                     password = password.trim() === '' ? null : password;
-                    setQuery(`mutation { createUser(name: ${name === null ? 'null' : '"' + name + '"'}, email: ${email === null ? 'null' : '"' + email + '"'}, password: ${password === null ? 'null' : '"' + password + '"'}) { id name email password createdAt } }`);
+                    setQuery(`mutation { 
+                        createUser(
+                            createUserInput: { 
+                                name: ${name === null ? 'null' : '"' + name + '"'},
+                                email: ${email === null ? 'null' : '"' + email + '"'},
+                                password: ${password === null ? 'null' : '"' + password + '"'}
+                            }
+                        )
+                    }`);
                 }
                 function setUpdateUserQuery() {
                     let id = document.getElementById('updateUser_id').value;
@@ -121,7 +129,16 @@
                     name = name.trim() === '' ? null : name;
                     email = email.trim() === '' ? null : email;
                     password = password.trim() === '' ? null : password;
-                    setQuery(`mutation { updateUser(id: "${id}", name: ${name === null ? 'null' : '"' + name + '"'}, email: ${email === null ? 'null' : '"' + email + '"'}, password: ${password === null ? 'null' : '"' + password + '"'}) { id name email password createdAt } }`);
+                    setQuery(`mutation {
+                        updateUser(
+                            updateUserInput: {
+                            id: "${id}"
+                            ${name !== null ? `, name: "${name}"` : ''}
+                            ${email !== null ? `, email: "${email}"` : ''}
+                            ${password !== null ? `, password: "${password}"` : ''}
+                            }
+                        ) { id name email createdAt } 
+                    }`);
                 }
                 function setDeleteUserQuery() {
                     let id = document.getElementById('deleteUser_id').value;
@@ -139,7 +156,16 @@
                     description = description.trim() === '' ? null : description;
                     authorId = authorId.trim() === '' ? null : authorId;
                     content = content.trim() === '' ? null : content;
-                    setQuery(`mutation { createArticle(title: ${title === null ? 'null' : '"' + title + '"'}, description: ${description === null ? 'null' : '"' + description + '"'}, authorId: ${authorId === null ? 'null' : '"' + authorId + '"'}, content: ${content === null ? 'null' : '"' + content + '"'}) { id title description authorId content createdAt updatedAt } }`);
+                    setQuery(`mutation {
+                        createArticle(
+                            createArticleInput: {
+                                title: ${title === null ? 'null' : '"' + title + '"'},
+                                description: ${description === null ? 'null' : '"' + description + '"'},
+                                authorId: ${authorId === null ? 'null' : '"' + authorId + '"'},
+                                content: ${content === null ? 'null' : '"' + content + '"'}
+                            }
+                        )
+                }`);
                 }
                 function setUpdateArticleQuery() {
                     let id = document.getElementById('updateArticle_id').value;
@@ -153,7 +179,18 @@
                     description = description.trim() === '' ? null : description;
                     content = content.trim() === '' ? null : content;
                     authorId = authorId.trim() === '' ? null : authorId;
-                    setQuery(`mutation { updateArticle(id: ${id === null ? 'null' : '"' + id + '"'}, title: ${title === null ? 'null' : '"' + title + '"'}, description: ${description === null ? 'null' : '"' + description + '"'}, content: ${content === null ? 'null' : '"' + content + '"'}, authorId: ${authorId === null ? 'null' : '"' + authorId + '"'}) { id title description authorId content createdAt updatedAt } }`);
+                    setQuery(`mutation { 
+                        updateArticle(
+                            updateArticleInput: {
+                                id: ${id === null ? 'null' : '"' + id + '"'}
+                                ${title !== null ? `, title: "${title}"` : ''}
+                                ${description !== null ? `, description: "${description}"` : ''}
+                                ${content !== null ? `, content: "${content}"` : ''}
+                                ${authorId !== null ? `, authorId: "${authorId}"` : ''}
+                            }
+                        )
+                        { id title description authorId content createdAt updatedAt } }`
+                    );
                 }
                 function setDeleteArticleQuery() {
                     let id = document.getElementById('deleteArticle_id').value;
@@ -165,7 +202,15 @@
                     let password = document.getElementById('login_password').value;
                     email = email.trim() === '' ? null : email;
                     password = password.trim() === '' ? null : password;
-                    setQuery(`mutation { login(input: { email: ${email === null ? 'null' : '"' + email + '"'}, password: ${password === null ? 'null' : '"' + password + '"'} }) }`);
+                    setQuery(`mutation {
+                        login(
+                            input: {
+                                email: ${email === null ? 'null' : '"' + email + '"'},
+                                password: ${password === null ? 'null' : '"' + password + '"'}
+                            }
+                        )
+                        { token user { id name email createdAt } } 
+                    }`);
                 }
         function updateAuthUI() {
             const token = localStorage.getItem('jwt');
@@ -179,7 +224,15 @@
             const loginResult = document.getElementById('login-status');
             const query = `
                 mutation {
-                    login(input: { email: "${email}", password: "${password}" })
+                    login(input: { email: "${email}", password: "${password}" }) {
+                        token
+                        user {
+                            id
+                            name
+                            email
+                            createdAt
+                        }
+                    }
                 }
             `;
             try {
@@ -191,14 +244,10 @@
                 const result = await response.json();
                 document.getElementById('response').textContent = JSON.stringify(result, null, 2);
                 if (result.data && result.data.login) {
-                    localStorage.setItem('jwt', result.data.login);
-                    // userId를 서버에서 받아서 저장 (JWT 디코딩 또는 별도 반환 필요)
-                    // 예시: result.data.user.id
-                    if (result.data.user && result.data.user.id) {
-                        localStorage.setItem('userId', result.data.user.id);
+                    localStorage.setItem('jwt', result.data.login.token);
+                    if (result.data.login.user && result.data.login.user.id) {
+                        localStorage.setItem('userId', result.data.login.user.id);
                     } else {
-                        // JWT에서 userId 추출 (sub에 email이 들어가는 경우)
-                        // 필요시 JWT 파싱 로직 추가
                         localStorage.removeItem('userId');
                     }
                     loginResult.textContent = 'Login successful! email: ' + email;
